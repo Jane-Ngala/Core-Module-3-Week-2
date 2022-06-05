@@ -1,6 +1,6 @@
 # Core-Module-3-Week-2
 
-
+![Kira](https://user-images.githubusercontent.com/99291087/172063605-badd09e1-1866-4115-9017-5b94bd2204aa.jpg)
 
 ## Kira Plastinina Research Question
 

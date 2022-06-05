@@ -1,0 +1,427 @@
+---
+title: "Core Module 3 Week 1 IP"
+author: "Jane Ngala"
+date: '2022-05-28'
+output:
+  html_document: default
+  pdf_document: default
+---
+**1. Defining the Question**
+
+ ***(a) Specifying the Question***
+ 
+- To identify which individuals are most likely to click on the advertisements
+
+  ***(b) Metric of Success***
+  
+- The project will be considered a success if individuals most likely to click on the ads.can be identified
+
+  ***(c) Understanding the context***
+  
+- A Kenyan entrepreneur has created an online cryptography course and would want to advertise it on her blog. She currently targets audiences originating from various countries. In the past, she ran ads to advertise a related course on the same blog and collected data in the process. She would now like to employ your services as a Data Science Consultant to help her identify which individuals are most likely to click on her ads.
+
+  ***(d) Experimental Design***
+  
+- Load the dataset
+- Find and deal with outliers, anomalies, and missing data within the dataset.
+- Perform  univariate and bivariate analysis.
+- Provide a conclusion and recommendation.
+
+  ***(e) Appropriateness of Data***
+- The data is appropriate and reliable.
+
+
+```{r}
+# Loading data set
+url<-"http://bit.ly/IPAdvertisingData"
+Advert_data<-read.csv(url)
+head(Advert_data)
+```
+```{r}
+# Checking the dimensions of dataset
+dim(Advert_data)
+```
+-The dataset contains 1000 rows and 10 columns
+
+```{r}
+# Checking for number of missing data
+length(which(is.na(Advert_data)))
+
+```
+-No Missing values in the dataset
+```{r}
+# Checking class of columns in dataset
+
+sapply(Advert_data, class)
+```
+```{r}
+# Selecting the Numerical columns
+
+num_cols<-unlist(lapply(Advert_data,is.numeric))
+data_num<-Advert_data[ , num_cols]
+data_num
+
+```
+
+```{r}
+# Checking for outliers
+boxplot(data_num)
+```
+-Outliers are present in the Area.Income column.
+
+```{r}
+# Listing the outliers
+
+boxplot.stats(data_num$Area.Income)$out
+```
+- The outliers are valid, as income betwen different regions and different people can vary with a wide range
+_ We shall keep the outliers
+
+```{r}
+# Statistical description of the numerical columns
+
+summary(data_num)
+```
+```{r}
+# Calculating Range in the numerical columns
+# Daily.Time.Spent.on.Site
+
+range_DTS<-91.43-32.60
+range_DTS
+
+# Age
+
+range_age<-61.00-19.00
+range_age
+
+# Area.Income
+
+range_Income<-79485-13996
+range_Income
+
+# Daily.Internet.Usage
+
+range_DIU<-270.0-104.8
+range_DIU
+
+```
+
+```{r}
+# Univariate Analysis 
+# Measures of Central Tendency:Mode
+
+getmode <- function(d) {
+   uniqd <- unique(d)
+   uniqd[which.max(tabulate(match(d, uniqd)))]
+}
+
+getmode(data_num$Daily.Time.Spent.on.Site)
+
+```
+- Majority of the people spend 62.26 mins on the site
+
+```{r}
+getmode(data_num$Area.Income)
+```
+-The most popular area income is 61833.9
+
+```{r}
+getmode(data_num$Age)
+```
+-Majority of people that visit the site are aged 31
+
+```{r}
+getmode(data_num$Daily.Internet.Usage)
+```
+-Most people had a daily internet usage of 167.22
+
+```{r}
+getmode(data_num$Male)
+```
+-Majority of the site visitors were Female
+
+```{r}
+getmode(data_num$Clicked.on.Ad)
+```
+-Majority of those that visted the site did not click on the Ad.
+
+```{r}
+# Measures of Dispresion : Variance
+
+var(data_num$Age)
+
+
+```
+- The age data is highly spread from its mean
+```{r}
+# Frequency distribution for sex
+
+sex_col<-data_num$Male
+sex_freq<-table(sex_col)
+sex_freq
+```
+- Out of those that visited the site 519 were Female and 481 Male
+
+```{r}
+# Frequency distribution for age
+
+age_col<-data_num$Age
+age_freq<-table(age_col)
+age_freq
+```
+
+
+```{r}
+# Frequency distribution on clicks on te ad.
+
+clicks<-data_num$Clicked.on.Ad
+clicks_freq<-table(clicks)
+clicks_freq
+```
+- There was an equal number of people that clicked on the ad. and those who did not
+
+```{r}
+# Histogram visualization of age
+
+hist(data_num$Age)
+```
+
+```{r}
+# Bivariate Analysis
+# correlation between the age and Male columns
+
+age<-data_num$Age
+sex<-data_num$Male
+cor(age,sex)
+```
+- Indicates a  negative linear realtionship between sex and age
+
+```{r}
+# Relationship between sex and Daily.Time.Spent.on.Site
+
+DTSS<-data_num$Daily.Time.Spent.on.Site
+cor(sex,DTSS)
+
+```
+- Indicates a negative linear realtionship between sex and Daily time spent on Site
+
+```{r}
+# Relationship between sex and Clicks
+
+cor(sex,clicks)
+```
+ - Indicates a negative linear realtionship between sex and clicks on the ad.
+ 
+```{r}
+# Relationship between age and clicks
+
+cor(age,clicks)
+```
+- Indicates a positive linear relationship between age and clicks on the ad.
+
+
+```{r}
+# Correlation matrix
+
+corr_matrix <- cor(data_num, method = c("pearson"))
+round(corr_matrix, 2)
+```
+```{r}
+# Graphical Visualization
+# Scatterplot showing relationship of age and Clicked on Ad.
+
+plot(data_num$Age, data_num$Clicked.on.Ad, xlab = 'Age', ylab = 'Clicks')
+
+```
+
+```{r}
+# Scatter plot showing relationship of sex and Clicked on Ad.
+
+plot(data_num$Male, data_num$Clicked.on.Ad, xlab = 'Sex', ylab = 'Clicks')
+
+
+```
+
+***Conclusion:***
+
+- Females are more likely to click on the advertisement.
+- Individuals of ages between 22-53 were the most active on the site and are more likely to click on the ad.
+
+
+***Recommendation:***
+
+- Work on the advert to attract more males
+
+**2. Modelling**
+  ***(i) Linear Regression***
+
+```{r}
+library(caTools)
+```
+
+```{r}
+# Splitting data into train and test
+
+split <- sample.split(data_num$Clicked.on.Ad, SplitRatio = 0.7)
+train_set <- subset(data_num, split == "TRUE")
+test_set <- subset(data_num, split == "FALSE")
+
+```
+
+```{r}
+# Feature Scaling
+ 
+train_scale<-scale(train_set)
+test_scale<-scale(test_set)
+```
+
+```{r}
+# Fitting Linear Regression Algorithm
+
+regressor = lm(formula = Clicked.on.Ad ~ Daily.Time.Spent.on.Site + Daily.Internet.Usage + Age + Male, data = train_set)
+
+```
+
+```{r}
+# Making Prediction
+
+y_pred<-predict(regressor, data = test_set)
+y_pred
+```
+
+```{r}
+# Evaluating the Algorithm
+
+error <- y_pred - data_num$Clicked.on.Ad
+rmse <- sqrt(mean(error^2))
+rmse
+```
+- The algorithm is a good fit
+
+  ***(ii) KNN***
+  
+```{r}
+# Finding value of k to use
+
+ round(sqrt(1000), digits = 0)
+
+```
+
+```{r}
+library(caret)
+library(class)
+```
+
+```{r}
+# Fitting the model
+
+knn_classifier <- knn(train_scale, test_scale, cl = train_set$Clicked.on.Ad, k = 32)
+```
+
+```{r}
+# Evaluating the algorithm
+
+conf_matrix<-table(test_set$Clicked.on.Ad, knn_classifier)
+confusionMatrix(conf_matrix)
+
+```
+
+_ The accuracy score is 99.3%, the model could be subject to overfitting.
+
+  ***(iii) Decision Trees***
+  
+```{r}
+library(rpart)
+library(e1071)
+```
+
+  
+```{r}
+# Fitting the model
+
+classifier = rpart(Clicked.on.Ad ~ Daily.Time.Spent.on.Site + Age + Area.Income + Daily.Internet.Usage, data = data_num)
+
+```
+
+  
+```{r}
+# Plotting the tree
+
+plot(classifier)
+text(classifier)
+```
+
+  ***(iii)SVM***
+
+```{r}
+# Splitting data into train and test sets
+
+intrain <- createDataPartition(y = data_num$Clicked.on.Ad, p= 0.7, list = FALSE)
+train_svm <- data_num[intrain,]
+test_svm <- data_num[-intrain,]
+```
+
+```{r}
+# Previewing size of train and test sets
+
+dim(train_svm)
+dim(test_svm)
+```
+
+```{r}
+# Fitting the Model
+
+svm_linear = svm(formula = Clicked.on.Ad ~ .,data = test_svm,type = 'C-classification',kernel = 'linear')
+```
+
+```{r}
+# Making Prediction
+
+pred = predict(svm_linear, data = test_svm)
+pred
+```
+
+```{r}
+# Evaluating Algorithm
+
+conf_mat<-table(test_svm$Clicked.on.Ad, pred)
+confusionMatrix(conf_mat)
+```
+
+- The model has an accuracy score of 96.7%
+
+  ***(v) Naive Bayes***
+
+```{r}
+# Splitting data into train and test sets
+
+indxTrain <- createDataPartition(y = data_num$Clicked.on.Ad,p = 0.7,list = FALSE)
+train_naive <- data_num[indxTrain,]
+test_naive <- data_num[-indxTrain,]
+
+```
+
+```{r}
+# Training the model
+
+naive_model <- naiveBayes(Clicked.on.Ad ~ ., data = train_naive)
+```
+
+```{r}
+# Making Prediction
+
+Predict <- predict(naive_model,newdata = test_naive)
+Predict
+```
+
+```{r}
+# Evaluating Algorithm
+
+conf_mat2<- table(test_naive$Clicked.on.Ad, Predict)
+confusionMatrix(conf_mat2)
+```
+
+- The model has an accuracy score of 97.7%
+
+***- The best model to use for prediction would be the Naive Bayes***
+

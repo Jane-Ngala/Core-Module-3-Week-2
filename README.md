@@ -1,6 +1,6 @@
 # Core-Module-3-Week-2
 
-<img src="https://user-images.githubusercontent.com/99291087/172064773-992ffb89-df14-4d4d-b2d6-2cf9f661b8e2.jpg" width="1080" height="350" />
+<img src="https://user-images.githubusercontent.com/99291087/172064773-992ffb89-df14-4d4d-b2d6-2cf9f661b8e2.jpg" width="950" height="350" />
 
 ## Kira Plastinina Research Question
 

@@ -21,4 +21,4 @@ Kira Plastinina [Link](https://kiraplastinina.ru/) is a Russian brand that is so
 
 - Advertising Project [Part 1](https://rpubs.com/Jane-/910978)
 - Customer Characteristics [Part 2](https://rpubs.com/Jane-/911129)
-- 
+

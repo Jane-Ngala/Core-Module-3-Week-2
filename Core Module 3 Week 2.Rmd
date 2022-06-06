@@ -1,0 +1,427 @@
+---
+title: 'Core Module 3 Week 2: Part 2: Research Question'
+author: "Jane Ngala"
+date: '2022-06-04'
+output: html_document
+---
+
+**1. Defining the Question**
+
+***(a) Specifying the Question***
+
+- To learn and understand the characteristics of customer groups
+
+***(b) Metric of Success***
+
+- The project will be considered a success if findings on the characteristics of customer groups helps inform the team in formulating the marketing and   sales strategies of the brand
+
+***(c) Understanding the context***
+
+- Kira Plastinina is a Russian brand that is sold through a defunct chain of retail stores in Russia, Ukraine, Kazakhstan, Belarus, China, Philippines, and Armenia. The brand’s Sales and Marketing team would like to understand their customer’s behavior from data that they have collected over the past year. More specifically, they would like to learn the characteristics of customer groups.
+
+***(d) Experimental Design***
+
+- Loading libraries
+- Loading Dataset
+- Data Cleaning
+- EDA
+- Implement the solution
+- Challenge the Solution
+- Follow up Questions
+
+***(e) Appropriateness of Data***
+
+- Data provided is appropriate and reliable
+
+**2. Loading Libraries and Dataset**
+
+```{r}
+# Loading libraries
+library(data.table)
+library (plyr)
+library(ggplot2)
+library(moments)
+library(ggcorrplot)
+
+```
+
+```{r}
+# Loading Dataset
+
+url<-"http://bit.ly/EcommerceCustomersDataset"
+kira<-read.csv(url)
+```
+
+
+**3. Checking the Data**
+
+```{r}
+# Previewing the data
+
+#view(kira)
+```
+
+```{r}
+# Previewing top of the data
+
+head(kira)
+```
+
+```{r}
+# Previewing bottom of the data
+
+tail(kira)
+```
+
+```{r}
+# Previewing shape
+
+cat("The dataset has", nrow(kira), "rows", "and", ncol(kira), "columns")
+```
+
+```{r}
+# Checking Data types
+
+str(kira)
+```
+- All columns have appropriate data types
+
+**4. Data Cleaning**
+
+```{r}
+# Checking for number of missing values
+
+length(which(is.na(kira)))
+```
+- There are 112 missing values.
+- Taking a closer look at the missing data.
+
+```{r}
+# Displayng the missing values
+
+kira[!complete.cases(kira), ]
+```
+- Missing values are in the 1st eight columns, all are numerical columns.
+
+```{r}
+# Handling missing values using the mean
+
+kira$Administrative[is.na(kira$Administrative)] <- mean(kira$Administrative, na.rm = TRUE)
+kira$Administrative_Duration[is.na(kira$Administrative_Duration)] <- mean(kira$Administrative_Duration, na.rm = TRUE)
+kira$Informational[is.na(kira$Informational)] <- mean(kira$Informational, na.rm = TRUE)
+kira$Informational_Duration[is.na(kira$Informational_Duration)] <- mean(kira$Informational_Duration, na.rm = TRUE)
+kira$ProductRelated[is.na(kira$ProductRelated)] <- mean(kira$ProductRelated, na.rm = TRUE)
+kira$ProductRelated_Duration[is.na(kira$ProductRelated_Duration)] <- mean(kira$ProductRelated_Duration, na.rm = TRUE)
+kira$BounceRates[is.na(kira$BounceRates)] <- mean(kira$BounceRates, na.rm = TRUE)
+kira$ExitRates[is.na(kira$ExitRates)] <- mean(kira$ExitRates, na.rm = TRUE)
+sum(is.na(kira))
+```
+
+```{r}
+# Checking for duplicates
+
+sum(duplicated(kira))
+```
+- There are 119 duplicated records in the dataset
+
+```{r}
+# Removing duplicates
+
+kira <- kira[!duplicated(kira), ]
+sum(duplicated(kira))
+```
+
+
+```{r}
+# Tidying column names
+
+colnames(kira)
+```
+- Column names are well structured and have similar case.
+
+```{r}
+# Checking for outliers
+# Selecting numerical columns
+
+cols_num  <- unlist(lapply(kira, is.numeric))
+kira_num <- kira[ ,cols_num]
+boxplot(kira_num)
+```
+
+- The columns with outliers are: Administrative_Duration,Informational_Duration and ProductRelated_Duration
+
+```{r}
+# Finding total number of outliers
+
+sum(kira$Administrative_Duration < quantile(kira$Administrative_Duration, p = 0.25)- 1.5 * IQR(kira$Administrative_Duration)) + sum(kira$Administrative_Duration > quantile(kira$Administrative_Duration, p = 0.75) + 1.5 * IQR(kira$Administrative_Duration))
+
+sum(kira$Informational_Duration < quantile(kira$Informational_Duration, p = 0.25)- 1.5 * IQR(kira$Informational_Duration)) + sum(kira$Informational_Duration > quantile(kira$Informational_Duration, p = 0.75) + 1.5 * IQR(kira$Informational_Duration))
+
+sum(kira$ProductRelated_Duration < quantile(kira$ProductRelated_Duration, p = 0.25)- 1.5 * IQR(kira$ProductRelated_Duration)) + sum(kira$ProductRelated_Duration > quantile(kira$ProductRelated_Duration, p = 0.75) + 1.5 * IQR(kira$ProductRelated_Duration))
+```
+- Outliers are too many, if removed there will be insufficient data for analysis
+
+```{r}
+# Previewing dimensions of the clean data
+
+dim(kira)
+```
+
+
+**5. EDA**
+
+```{r}
+# Summary of statistical distribution
+
+summary(kira)
+```
+
+  ***(i) Univariate Analysis***
+
+```{r}
+# Visualization using barplots
+
+par(mfrow = c(2,4), mar = c(4,3,2,2))
+barplot(table(kira$Revenue),main = "Revenue")
+barplot(table(kira$Weekend),main = "Weekend")
+barplot(table(kira$VisitorType),main = "Visitor Type")
+barplot(table(kira$TrafficType),main = "Traffic Type")
+barplot(table(kira$Region),main = "Region")
+barplot(table(kira$Browser),main = "Browser")
+barplot(table(kira$OperatingSystems),main = "Operating Systems")
+barplot(table(kira$Month),main = "Month")
+
+
+```
+
+- Most customers visit the site during weekdays
+- Most customers visiting the site do not purchase
+- Most visitors on the site are returning customers
+- The most popular operating system is OS 2
+- The most popular region is region 1 followed by region 3
+- The most popular browser used by customers is browser 2 followed by browser 1
+
+```{r}
+# Visualization using Histograms
+
+par(mfrow = c(2,2), mar = c(5,4,2,2))
+hist(kira$Administrative,xlab ='Administrative', main ='Histogram for Administrative')
+hist(kira$Administrative_Duration,xlab ='Administrative Duration', main ='Histogram for Administrative Duration')
+hist(kira$Informational,xlab ='Informational', main ='Histogram for Informational')
+hist(kira$Informational_Duration,xlab ='Informational Duration', main ='Histogram for Informational Duration')
+hist(kira$ProductRelated,xlab ='Product Related', main ='Histogram for Product Related')
+hist(kira$ProductRelated_Duration,xlab ='Product Related Duration', main ='Histogram for Product Related Duration')
+hist(kira$BounceRates,xlab ='Bounce Rates', main ='Histogram for Bounce Rates')
+hist(kira$ExitRates,xlab ='Exit Rates', main ='Histogram for Exit Rates')
+hist(kira$PageValues,xlab ='Page Values', main ='Histogram for Page Values')
+hist(kira$SpecialDay,xlab ='Special Day', main ='Histogram for Special Day')
+```
+
+- Data is heavily skewed to the left for the numerical columns;Distribution is not Gaussian.
+
+  ***(ii) Bivariate Analysis***
+
+```{r}
+# Visualization of relationship between Admin duration and product related duration
+
+ggplot(kira, aes(x=ProductRelated_Duration, y=Administrative_Duration)) + geom_point()
+
+```
+
+```{r}
+# Visualization of relationship between Administrative and Administrative duration
+
+ggplot(kira, aes(x=Administrative, y=Administrative_Duration)) + geom_point()
+```
+
+```{r}
+# Visualization of relationship between Informational and Informational duration
+
+ggplot(kira, aes(x=Informational, y=Informational_Duration)) + geom_point()
+```
+
+```{r}
+# Visualization of relationship between Product Related and Product related duratiion
+
+ggplot(kira, aes(x=ProductRelated, y=ProductRelated_Duration)) + geom_point()
+```
+
+
+```{r}
+# Plotting the correlations
+
+ggcorrplot(cor(kira[ , c(1:10)]), type = "lower", outline.col = "black",
+ lab=TRUE,
+ ggtheme = ggplot2::theme_gray,
+ colors = c("#6D9EC1", "white", "#E46726"))
+```
+- A positive correlation indicates the variables have a linear relationship
+- The variables in our data that have a high positive correlation are:
+      * ExitRates & BounceRates
+      * ProductRelated & ProductRelated_Duration 
+      * Informational &  Informational_Duration
+      * Administrative & Administartive_Duration 
+
+
+**6. Implementing the Solution**
+
+```{r}
+# Dropping the Character variables 
+
+kira_new<-kira[ ,c(1:10,12:15)]
+```
+
+
+```{r}
+# Normalizing the data
+
+normalize <- function(x){return ((x-min(x)) / (max(x)-min(x)))}
+
+kira_norm<-normalize(kira_new)
+
+```
+
+***(i) K-Means Clustering***
+
+```{r}
+# Loading Libraries
+
+library(factoextra)
+library(NbClust)
+library (cluster)
+
+
+```
+
+
+```{r}
+# Elbow method
+
+fviz_nbclust(kira_norm, kmeans, method = "wss") + geom_vline(xintercept = 3, linetype = 2)+ labs(subtitle = "Elbow method")
+```
+- Optimum number of clusters is 3 using elbow method
+
+```{r}
+# Silhouette method
+
+fviz_nbclust(kira_norm, kmeans, method = "silhouette")+ labs(subtitle = "Silhouette method")
+```
+- Optimum number of clusters is 2 using silhouette method
+
+```{r}
+# Choosing the best number of clusters
+
+# nb<-NbClust(data = kira_norm, distance = "euclidean",min.nc = 2, max.nc = 15, method = "kmeans")
+# fviz_nbclust(nb)
+```
+
+```{r}
+# Implementing  using 2 clusters
+
+km <- kmeans(kira_norm,2,iter.max = 10, nstart = 25)
+km
+```
+
+```{r}
+# Plotting  final k-means model
+ 
+fviz_cluster(km, data = kira_norm)
+```
+
+***(ii) Hierarchical Clustering***
+
+```{r}
+# Using randomization
+
+rand_kira <- kira_norm[sample(nrow(kira_norm), size=1500), ]
+head(rand_kira)
+
+
+```
+
+
+```{r}
+# Defining linkage methods
+
+methods<- c( "average", "single", "complete", "ward")
+names(methods) <- c( "average", "single", "complete", "ward")
+
+```
+
+```{r}
+# Function to compute agglomerative coefficient
+
+ac <- function(x) {agnes(rand_kira, method = x)$ac}
+```
+
+```{r}
+# Calculating agglomerative coefficient for each clustering linkage method
+
+sapply(methods, ac)
+```
+
+```{r}
+# Performing hierarchical clustering using Ward's minimum variance
+
+clust <- agnes(rand_kira, method = "ward")
+```
+
+```{r}
+# Producing dendrogram
+
+pltree(clust, cex = 0.6, hang = -1, main = "Dendrogram") 
+```
+
+```{r}
+# Calculating gap statistic 
+
+gap_stat <- clusGap(rand_kira, FUN = hcut, nstart = 25, K.max = 10, B = 50)
+```
+
+```{r}
+# Plotting clusters vs. gap statistic
+fviz_gap_stat(gap_stat)
+
+```
+
+```{r}
+# Applying Cluster Labels to dataset
+# Computing distance matrix
+# Performing hierarchical clustering using Ward's method
+
+final_clust <- agnes(rand_kira,metric = "euclidean", method = "ward",stand = TRUE)
+
+# cutting the dendrogram into 4 clusters
+
+groups <- cutree(final_clust, k=3)
+
+# Finding number of observations in each cluster
+table(groups)
+
+```
+
+```{r}
+# Appending cluster labels to original data
+
+final_data <- cbind(rand_kira, cluster = groups)
+ 
+# Displaying the top of the final data
+
+head(final_data)
+```
+
+```{r}
+# Finding mean values for each cluster
+
+aggregate(final_data, by=list(cluster=final_data$cluster), mean)
+```
+
+**7. Conclusion**
+ 
+- Most customers visit the site during weekdays
+- Most customers visiting the site do not make a purchase
+- Most visitors on the site are returning customers
+- The most popular operating system is OS 2
+- The most popular region is region 1 followed by region 3
+- The most popular browser used by customers is browser 2 followed by browser 1
+  
